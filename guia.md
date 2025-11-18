@@ -415,8 +415,7 @@ Abre `app.py` y **reemplaza todo el contenido** por este:
 import streamlit as st
 from langchain_ollama import ChatOllama
 
-
-# 🎨 Configuración básica de la página
+# 1. Configuración de la página
 st.set_page_config(
     page_title="Chatbot RH",
     page_icon="🤖",
@@ -424,45 +423,40 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 🧼 CSS: fondo negro + letra blanca
+# 🧼 CSS corregido: fondo negro + letra blanca SIN romper todo
 st.markdown(
     """
     <style>
-    /* Fondo negro */
+
+    /* Fondo general negro */
     .stApp {
         background-color: #000000 !important;
-        color: #ffffff !important;
     }
 
-    /* Texto general en blanco */
-    * {
-        color: #ffffff !important;
-    }
-
-    /* Ocultar menú y pie de página de Streamlit */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-
-    /* Ajustar el ancho del contenedor principal */
-    .block-container {
-        max-width: 900px;
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-    }
-
-    /* Títulos centrados y blancos */
-    h1, h2, h3, h4, h5, h6 {
-        text-align: center;
+    /* Texto principal en blanco */
+    .block-container,
+    .stMarkdown,
+    .stText,
+    .stCaption,
+    .stHeader,
+    h1, h2, h3, h4, h5, h6,
+    p, label, span, div[data-testid="stMarkdown"] {
         color: #ffffff !important;
     }
 
     /* Sidebar oscuro */
     section[data-testid="stSidebar"] {
         background-color: #111111 !important;
+        color: #ffffff !important;
     }
 
-    /* Código dentro del sidebar */
-    .stCode, code {
+    /* Textos dentro del sidebar */
+    section[data-testid="stSidebar"] * {
+        color: #ffffff !important;
+    }
+
+    /* Inputs con texto blanco */
+    input, textarea {
         color: #ffffff !important;
         background-color: #222222 !important;
     }
@@ -471,7 +465,21 @@ st.markdown(
     .stChatMessage {
         background-color: #111111 !important;
         color: #ffffff !important;
+        border-radius: 8px;
+        padding: 10px;
     }
+
+    /* Ocultar menú y footer */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+
+    /* Ajuste del contenedor */
+    .block-container {
+        max-width: 900px;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+
     </style>
     """,
     unsafe_allow_html=True
@@ -483,7 +491,7 @@ if "messages" not in st.session_state:
         {
             "role": "assistant",
             "content": (
-                "👋 ¡Hola! Soy tu Chatbot de Recursos Humanos.\n\n"
+                "👋 ¡Hola! Soy **Amparito**, la de Recursos Humanos.\n\n"
                 "Puedo ayudarte con cosas como:\n"
                 "- Políticas de vacaciones 🏖️\n"
                 "- Beneficios y bienestar 🎁\n"
@@ -494,33 +502,12 @@ if "messages" not in st.session_state:
         }
     ]
 
-# 🧱 Encabezado principal
-st.title("🤖 Chatbot para Recursos Humanos")
-st.caption("Tu asistente amigable de RRHH – cero tecnicismos, respuestas claras y un toque de humor 😄")
-
-# 🎯 Sidebar con información extra
-with st.sidebar:
-    st.subheader("Acerca de este chatbot")
-    st.write(
-        """
-        Este asistente está pensado para:
-        - Responder preguntas frecuentes de RRHH  
-        - Servir como ejemplo en un curso de IA  
-        - Mostrar cómo se ve un chat tipo ChatGPT con Streamlit  
-        """
-    )
-    st.markdown("---")
-    st.write("💡 Tip: prueba con preguntas como:")
-    st.code("¿Cuántos días de vacaciones tengo al año?")
-    st.code("¿Cómo es el proceso de onboarding?")
-
 # 2. Función para cargar el modelo de Ollama
 @st.cache_resource
 def cargar_modelo():
-    # Modelo local y gratuito usando Ollama
     modelo = ChatOllama(
-        model="deepseek-r1:8b",   # nombre del modelo que bajaste con ⁠ ollama pull ⁠
-        temperature=0.2     # qué tan creativo es (0 = muy serio, 1 = muy creativo)
+        model="deepseek-r1:8b",   # Modelo local
+        temperature=0.2
     )
     return modelo
 
@@ -530,24 +517,48 @@ def responder_pregunta(pregunta: str) -> str:
     respuesta = modelo.invoke(pregunta)
     return respuesta.content
 
-# 💬 Mostrar historial del chat
+# 4. Encabezado de la app
+st.title("🤖 Amparito RH – Chatbot de Recursos Humanos")
+st.caption("Tu asistente confiable con respuestas claras, humanas y sin tecnicismos.")
+
+# 5. Sidebar
+with st.sidebar:
+    st.subheader("Acerca de Amparito")
+    st.write(
+        """
+        Este asistente está diseñado para:
+        - Responder preguntas comunes de RRHH  
+        - Acompañarte en procesos internos  
+        - Explicar políticas internas  
+        """
+    )
+    st.markdown("---")
+    st.write("💡 *Ejemplos de preguntas:*")
+    st.code("¿Cuántos días de vacaciones tengo?")
+    st.code("¿Cuánto dura el periodo de prueba?")
+
+# 6. Mostrar historial del chat
 for msg in st.session_state.messages:
     avatar = "🤖" if msg["role"] == "assistant" else "🧑‍💼"
-    with st.chat_message("assistant" if msg["role"] == "assistant" else "user", avatar=avatar):
+    with st.chat_message(msg["role"], avatar=avatar):
         st.markdown(msg["content"])
 
-# 🧾 Input del usuario
-prompt = st.chat_input("Escribe tu pregunta sobre Recursos Humanos aquí...")
+# 7. Input del usuario
+prompt = st.chat_input("Escribe tu pregunta para Amparito aquí...")
 
 if prompt:
+    # Mostrar mensaje del usuario
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user", avatar="🧑‍💼"):
         st.markdown(prompt)
 
+    # Procesar respuesta
     with st.chat_message("assistant", avatar="🤖"):
-        with st.spinner("Pensando la mejor respuesta para ti... 💭"):
+        with st.spinner("Amparito está revisando las políticas... 📚"):
             respuesta = responder_pregunta(prompt)
             st.markdown(respuesta)
+
+    # Guardar en historial
     st.session_state.messages.append({"role": "assistant", "content": respuesta})
 ```
 
